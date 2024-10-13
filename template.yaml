@@ -1,0 +1,36 @@
+# template.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: FastAPI application deployed with AWS SAM
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 128
+    Runtime: python3.12
+
+Resources:
+  FastAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./app
+      Handler: main.handler
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+    Metadata:
+      BuildMethod: python3.12
+      BuildProperties:
+        Pip:
+          - '--requirement requirements.txt'
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  LocalEndpoint:
+    Description: "URL for local testing with sam local"
+    Value: "http://127.0.0.1:3000"
